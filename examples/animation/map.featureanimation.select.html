@@ -58,10 +58,15 @@
 			layers: [layer]
 		});
 	// Change pointer over feature
+	// 地图鼠标移动/点击响应
 	map.on("pointermove", function (evt) 
-	{   var hit = this.forEachFeatureAtPixel(evt.pixel, function(feature, layer) { return true; }); 
+	{  
+		//ol的函数forEachFeatureAtPixel,鼠标操作在feature上返回true,不是返回undefined
+		// https://openlayers.org/en/latest/apidoc/module-ol_Map-Map.html
+		var hit = this.forEachFeatureAtPixel(evt.pixel, function(feature, layer) { return true; }); 
+		// 设置点击style,getViewport/Get the element that serves as the map viewport.
         if (hit) this.getViewport().style.cursor = 'pointer';
-        else this.getViewport().style.cursor = '';
+		else this.getViewport().style.cursor = '';
     });
 
 	// Style to draw the feature
@@ -100,16 +105,26 @@
 		{	duration: 800,
 			hiddenStyle: transparentStyle
 		});
+
 	// Continune animation if not stop by user
 	anim.on('animationend', function(e)
-		{	if (!e.user) animTab[e.feature.get('nb')] = vector.animateFeature (e.feature, anim);
+		{	
+			// feature点击监控
+			// 如果没有设置,{user: true}证明没有手动停止
+			if (!e.user) animTab[e.feature.get('nb')] = vector.animateFeature (e.feature, anim);
 		});
 
+	// 流程应该是点击->	map.on("pointermove", function (evt))响应，设置style
+	// -> select.on('select', function(e))设置start
+	// -> 动画监听anim.on('animationend', function(e))
+
 	// On select start/stop animation
+	// 这个使用处理当前点击是否开启动画还是停止动画
 	var select = new ol.interaction.Select({ hitTolerance: 1 });
 	map.addInteraction(select);
 	select.on('select', function(e)
-	{	if (e.selected.length)
+	{	
+		if (e.selected.length)
 		{	var f = e.selected[0];
 			select.getFeatures().clear();
 			// Create animation if doesn't exist
@@ -135,6 +150,7 @@
 	map.addLayer(vector);
 
 	// Add a feature on the map
+	// 随机添加feature，下面两个函数不需要理会
 	function addFeatureAt(nb, featureType, p)
 	{	var f, r = map.getView().getResolution() *10;
 		switch (featureType)
