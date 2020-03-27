@@ -8,17 +8,17 @@
 	<meta name="keywords" content="ol3, animation, drop, slide, throw, fade, bounce, easing" />
 
 	<!-- jQuery -->
-	<script type="text/javascript" src="https://code.jquery.com/jquery-1.11.0.min.js"></script>
+	<!-- <script type="text/javascript" src="https://code.jquery.com/jquery-1.11.0.min.js"></script> -->
 
 	<!-- Openlayers -->
-    <link rel="stylesheet" href="https://openlayers.org/en/latest/css/ol.css" />
-	<script type="text/javascript" src="https://openlayers.org/en/latest/build/ol.js"></script>
-	<script src="https://cdn.polyfill.io/v2/polyfill.min.js?features=requestAnimationFrame,Element.prototype.classList,URL,Object.assign"></script>
+    <link rel="stylesheet" href="https://openlayers.org/en/v5.3.0/css/ol.css" />
+	<script type="text/javascript" src="https://openlayers.org/en/v5.3.0/build/ol.js"></script>
+	<!-- <script src="https://cdn.polyfill.io/v2/polyfill.min.js?features=requestAnimationFrame,Element.prototype.classList,URL,Object.assign"></script> -->
 	
 	<!-- ol-ext -->
 	<script type="text/javascript" src="../../dist/ol-ext.js"></script>
 
-	<link rel="stylesheet" href="../style.css" />
+	<!-- <link rel="stylesheet" href="../style.css" /> -->
 	</head>
 <body >
 	<a href="https://github.com/Viglino/ol-ext" class="icss-github-corner"><i></i></a>
@@ -74,7 +74,7 @@
 	var fillcolor = [0,0,255,0.3];
 	var style = 
 	[	new ol.style.Style(
-			{	image: new ol.style.Shadow({ radius: 15, }),
+			{	//image: new ol.style.Shadow({ radius: 15, }),
 				stroke: new ol.style.Stroke({ color: [0,0,0,0.3], width: 2 }),
 				fill: new ol.style.Fill({ color: [0,0,0,0.3]}),
 				zIndex: -1
@@ -106,13 +106,6 @@
 			hiddenStyle: transparentStyle
 		});
 
-	// Continune animation if not stop by user
-	anim.on('animationend', function(e)
-		{	
-			// feature点击监控
-			// 如果没有设置,{user: true}证明没有手动停止
-			if (!e.user) animTab[e.feature.get('nb')] = vector.animateFeature (e.feature, anim);
-		});
 
 	// 流程应该是点击->	map.on("pointermove", function (evt))响应，设置style
 	// -> select.on('select', function(e))设置start
@@ -124,6 +117,7 @@
 	map.addInteraction(select);
 	select.on('select', function(e)
 	{	
+		console.log(22);
 		if (e.selected.length)
 		{	var f = e.selected[0];
 			select.getFeatures().clear();
@@ -177,6 +171,7 @@
 				break;
 		}
 		f.set("nb", nb);
+		f.setId('endMarker')
 		vector.getSource().addFeature(f);
 	}
 
@@ -187,7 +182,7 @@
 		select.getFeatures().clear();
 		var ex = map.getView().calculateExtent(map.getSize());
 		// Add features after animation ends
-		for (var i=0; i<10; i++)
+		for (var i=0; i<1; i++)
 		{	addFeatureAt( i, Math.round(Math.random()*3),
 					[	ex[0] +Math.random()*(ex[2]-ex[0]),
 						ex[1] +Math.random()*(ex[3]-ex[1])
@@ -196,6 +191,19 @@
 	}
 	add10();
 
+	
+	const animFeature = vector.animateFeature(vector.getSource().getFeatureById('endMarker'), anim)
+	// animFeature.stop()
+	// console.log(animFeature.isPlaying())
+		// Continune animation if not stop by user
+	anim.on('animationend', function(e)
+		{	
+			// 运行vector.animateFeature (e.feature, anim)会触发动画，触发动画会触发这个监听，一直循环
+			// 如果没有设置,{user: true}证明没有手动停止
+			if (!e.user) animTab[e.feature.get('nb')] = vector.animateFeature (e.feature, anim);
+			console.log(animTab[e.feature.get('nb')]);
+			
+		});
 	</script>
 	
 </body>
